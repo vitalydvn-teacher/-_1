@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Демонстраційний проєкт — інтерактивний планувальник навчального дня">
+  <title>Демонстраційний проєкт — Мій навчальний день</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --ink: #17213b;
+      --muted: #69748d;
+      --line: #e7eaf2;
+      --primary: #6658e8;
+      --primary-dark: #5143cf;
+      --mint: #dff8ef;
+      --green: #15966b;
+      --rose: #fff0f1;
+      --shadow: 0 16px 42px rgba(34, 45, 85, .09);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 5%, rgba(111, 94, 249, .12), transparent 27rem),
+        radial-gradient(circle at 95% 15%, rgba(34, 197, 153, .10), transparent 24rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1120px, calc(100% - 36px)); margin: 0 auto; padding: 28px 0 48px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 30px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 850; letter-spacing: .09em; font-size: 1.08rem; }
+    .brand-mark {
+      display: grid; place-items: center; width: 43px; height: 43px; border-radius: 14px;
+      color: white; background: linear-gradient(135deg, #786cf4, #5143cf);
+      box-shadow: 0 8px 18px rgba(102, 88, 232, .28); font-size: 1.2rem;
+    }
+    .date-pill { color: var(--muted); background: rgba(255,255,255,.8); border: 1px solid var(--line); padding: 10px 15px; border-radius: 999px; font-size: .88rem; }
+    .hero {
+      position: relative; overflow: hidden; padding: clamp(25px, 5vw, 48px);
+      border-radius: 28px; color: white;
+      background: linear-gradient(115deg, #282b61 0%, #5146b8 55%, #7568ed 100%);
+      box-shadow: var(--shadow); margin-bottom: 22px;
+    }
+    .hero::after { content: "✦"; position: absolute; right: 8%; top: 8%; font-size: 8rem; color: rgba(255,255,255,.10); transform: rotate(15deg); }
+    .eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: .72rem; font-weight: 800; color: #c9c5ff; }
+    h1 { font-size: clamp(2rem, 5vw, 3.35rem); line-height: 1.05; margin: 13px 0 12px; letter-spacing: -.045em; }
+    .hero p { color: #e1e1ff; max-width: 560px; line-height: 1.65; margin: 0; }
+    .hero-tag { display: inline-flex; margin-top: 22px; padding: 9px 13px; border-radius: 999px; background: rgba(255,255,255,.14); font-size: .83rem; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0 22px; }
+    .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; box-shadow: 0 7px 22px rgba(34,45,85,.035); }
+    .stat-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--muted); font-size: .83rem; }
+    .stat-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: #f0efff; color: var(--primary); }
+    .stat strong { display: block; font-size: 1.8rem; margin-top: 8px; letter-spacing: -.04em; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .8fr); gap: 18px; align-items: start; }
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 23px; box-shadow: 0 7px 25px rgba(34,45,85,.04); }
+    .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; }
+    h2 { margin: 0; font-size: 1.15rem; letter-spacing: -.02em; }
+    .sub { color: var(--muted); font-size: .84rem; margin: 5px 0 0; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr 115px; gap: 10px; }
+    label { display: block; color: var(--muted); font-size: .76rem; font-weight: 700; margin: 0 0 7px 2px; }
+    input, select {
+      width: 100%; min-width: 0; border: 1px solid #dfe3ef; background: #fbfcff;
+      border-radius: 12px; padding: 12px 13px; color: var(--ink); outline: none; transition: .2s;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102,88,232,.12); }
+    .add-row { display: flex; justify-content: flex-end; margin-top: 12px; }
+    .btn { border: 0; border-radius: 12px; padding: 11px 16px; font-weight: 750; transition: transform .15s, background .15s; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 7px 15px rgba(102,88,232,.2); }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-soft { color: var(--primary); background: #f0efff; }
+    .task-list { display: grid; gap: 10px; margin-top: 18px; }
+    .task {
+      display: grid; grid-template-columns: 24px minmax(0,1fr) auto; align-items: center; gap: 12px;
+      padding: 13px 13px; border: 1px solid var(--line); border-radius: 15px; background: #fff;
+    }
+    .task.done { background: #f8fcfa; }
+    .check {
+      appearance: none; width: 21px; height: 21px; margin: 0; border: 2px solid #c9cde0; border-radius: 7px;
+      cursor: pointer; display: grid; place-items: center; background: white;
+    }
+    .check:checked { background: var(--green); border-color: var(--green); }
+    .check:checked::after { content: "✓"; color: white; font-size: 14px; font-weight: 900; }
+    .task-title { font-weight: 750; font-size: .93rem; overflow-wrap: anywhere; }
+    .task.done .task-title { color: #8a94a7; text-decoration: line-through; }
+    .task-meta { color: var(--muted); font-size: .76rem; margin-top: 4px; }
+    .task-actions { display: flex; align-items: center; gap: 8px; }
+    .time-chip { padding: 6px 9px; background: #f2f3fa; border-radius: 9px; color: #59637d; font-size: .75rem; white-space: nowrap; }
+    .delete { border: 0; background: transparent; color: #a0a7b8; font-size: 1.05rem; padding: 5px; }
+    .delete:hover { color: #d34c62; }
+    .empty { text-align: center; color: var(--muted); padding: 30px 10px; border: 1px dashed #d9deeb; border-radius: 15px; }
+    .progress-wrap { background: #eff0f8; height: 12px; border-radius: 99px; overflow: hidden; margin: 16px 0 9px; }
+    .progress-bar { height: 100%; width: 0%; border-radius: inherit; background: linear-gradient(90deg, #6b5ce7, #27bd91); transition: width .35s ease; }
+    .progress-line { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; }
+    .focus-card { margin-top: 18px; padding: 17px; border-radius: 16px; background: linear-gradient(135deg, #effcf7, #f3f1ff); }
+    .focus-card strong { display: block; margin-bottom: 6px; }
+    .focus-card p { color: #66718a; font-size: .83rem; line-height: 1.5; margin: 0; }
+    .tip { color: var(--muted); font-size: .82rem; line-height: 1.6; margin: 16px 2px 0; }
+    .notice { display: none; margin-top: 15px; padding: 13px 15px; border-radius: 13px; background: var(--mint); color: #08734f; font-weight: 750; font-size: .9rem; }
+    .notice.show { display: block; animation: pop .35s ease; }
+    @keyframes pop { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    footer { text-align: center; color: #929bb0; font-size: .78rem; padding: 25px 0 0; }
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+      .stats { gap: 9px; }
+      .stat { padding: 14px; }
+      .stat strong { font-size: 1.45rem; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .field-duration { grid-column: 1 / -1; }
+      .hero::after { right: 2%; font-size: 5rem; }
+    }
+    @media (max-width: 440px) {
+      .shell { width: min(100% - 22px, 1120px); padding-top: 16px; }
+      header { margin-bottom: 18px; }
+      .date-pill { font-size: .72rem; padding: 8px 10px; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .stat:last-child { grid-column: 1 / -1; }
+      .panel { padding: 17px; }
+      .task { grid-template-columns: 22px minmax(0,1fr); }
+      .task-actions { grid-column: 2; justify-content: space-between; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand"><span class="brand-mark">✦</span><span>Демонстраційний проєкт</span></div>
+      <div class="date-pill" id="todayLabel">Мій навчальний день</div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">Твій простір продуктивності</div>
+      <h1>Плануй. Навчайся.<br>Досягай!</h1>
+      <p>Перетвори навчальні справи на зрозумілий план. Додавай завдання, відстежуй час і святкуй кожен маленький результат.</p>
+      <span class="hero-tag">✧ Один крок сьогодні — великий результат завтра</span>
+    </section>
+
+    <section class="stats" aria-label="Статистика навчального дня">
+      <article class="stat">
+        <div class="stat-top"><span>Усього завдань</span><span class="stat-icon">▤</span></div>
+        <strong id="totalTasks">0</strong>
+      </article>
+      <article class="stat">
+        <div class="stat-top"><span>Залишилось часу</span><span class="stat-icon">◷</span></div>
+        <strong id="remainingTime">0 <small style="font-size:.85rem;font-weight:650">хв</small></strong>
+      </article>
+      <article class="stat">
+        <div class="stat-top"><span>Виконано</span><span class="stat-icon">✓</span></div>
+        <strong id="completedTasks">0</strong>
+      </article>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Мій список завдань</h2><p class="sub">Додавай справи та рухайся до мети</p></div>
+          <button class="btn btn-soft" id="resetBtn" type="button" title="Відновити демонстраційний список">↻ Скинути</button>
+        </div>
+
+        <form id="taskForm">
+          <div class="form-grid">
+            <div>
+              <label for="subject">Предмет</label>
+              <select id="subject" required>
+                <option value="">Обери предмет</option>
+                <option>Інформатика</option><option>Математика</option><option>Українська мова</option>
+                <option>Історія</option><option>Англійська мова</option><option>Фізика</option>
+                <option>Біологія</option><option>Інше</option>
+              </select>
+            </div>
+            <div>
+              <label for="taskName">Навчальне завдання</label>
+              <input id="taskName" type="text" maxlength="70" placeholder="Наприклад, повторити тему" required>
+            </div>
+            <div class="field-duration">
+              <label for="duration">Час, хвилин</label>
+              <input id="duration" type="number" min="1" max="600" value="30" required>
+            </div>
+          </div>
+          <div class="add-row"><button class="btn btn-primary" type="submit">＋ Додати завдання</button></div>
+        </form>
+
+        <div class="task-list" id="taskList" aria-live="polite"></div>
+        <div class="notice" id="successNotice" role="status">🎉 Вітаємо! Усі завдання виконано!</div>
+      </div>
+
+      <aside>
+        <div class="panel">
+          <div class="panel-head"><div><h2>Мій прогрес</h2><p class="sub">Кожне виконане завдання — перемога</p></div><span class="stat-icon">↗</span></div>
+          <div style="display:flex;align-items:baseline;gap:7px"><strong id="progressPercent" style="font-size:2.5rem;letter-spacing:-.05em">0%</strong><span style="color:var(--muted);font-size:.82rem">виконано</span></div>
+          <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+          <div class="progress-line"><span id="progressCount">0 із 0 завдань</span><span id="progressCaption">Починай!</span></div>
+          <div class="focus-card">
+            <strong>💡 Порада дня</strong>
+            <p>Спробуй метод «25 + 5»: 25 хвилин зосередженої роботи, потім 5 хвилин відпочинку. Маленькі перерви допомагають зберігати увагу.</p>
+          </div>
+          <p class="tip">Твої завдання зберігаються в цьому браузері. Якщо відкрити сторінку на іншому пристрої, список автоматично не перенесеться.</p>
+        </div>
+      </aside>
+    </section>
+
+    <footer>STUDYFLOW · Навчайся у власному ритмі · Демонстраційний навчальний проєкт</footer>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "studyflow_tasks_v1";
+    const starterTasks = [
+      { id: 1, subject: "Інформатика", name: "Повторити тему «Хостинг сайтів»", minutes: 25, done: false },
+      { id: 2, subject: "Математика", name: "Розв'язати 5 тренувальних задач", minutes: 40, done: false },
+      { id: 3, subject: "Англійська мова", name: "Вивчити 10 нових слів", minutes: 20, done: true }
+    ];
+    let tasks = loadTasks();
+
+    function loadTasks() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        return saved ? JSON.parse(saved) : starterTasks.map(t => ({...t}));
+      } catch (error) {
+        return starterTasks.map(t => ({...t}));
+      }
+    }
+    function saveTasks() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); }
+      catch (error) { console.warn("Не вдалося зберегти список у браузері.", error); }
+    }
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      })[char]);
+    }
+    function render() {
+      const list = document.getElementById("taskList");
+      const completed = tasks.filter(task => task.done).length;
+      const totalMinutes = tasks.filter(task => !task.done).reduce((sum, task) => sum + task.minutes, 0);
+      const percent = tasks.length ? Math.round(completed / tasks.length * 100) : 0;
+
+      document.getElementById("totalTasks").textContent = tasks.length;
+      document.getElementById("remainingTime").innerHTML = `${totalMinutes} <small style="font-size:.85rem;font-weight:650">хв</small>`;
+      document.getElementById("completedTasks").textContent = completed;
+      document.getElementById("progressPercent").textContent = `${percent}%`;
+      document.getElementById("progressBar").style.width = `${percent}%`;
+      document.getElementById("progressCount").textContent = `${completed} із ${tasks.length} завдань`;
+      document.getElementById("progressCaption").textContent =
+        tasks.length && completed === tasks.length ? "Чудова робота!" : percent >= 50 ? "Так тримати!" : "Крок за кроком";
+
+      if (!tasks.length) {
+        list.innerHTML = '<div class="empty">Поки що завдань немає.<br>Додай перше завдання вище ✨</div>';
+      } else {
+        list.innerHTML = tasks.map(task => `
+          <article class="task ${task.done ? "done" : ""}">
+            <input class="check" type="checkbox" aria-label="Позначити виконання: ${escapeHTML(task.name)}"
+              data-action="toggle" data-id="${task.id}" ${task.done ? "checked" : ""}>
+            <div>
+              <div class="task-title">${escapeHTML(task.name)}</div>
+              <div class="task-meta">${escapeHTML(task.subject)}</div>
+            </div>
+            <div class="task-actions">
+              <span class="time-chip">◷ ${task.minutes} хв</span>
+              <button class="delete" type="button" data-action="delete" data-id="${task.id}" aria-label="Видалити завдання">✕</button>
+            </div>
+          </article>`).join("");
+      }
+      const notice = document.getElementById("successNotice");
+      notice.classList.toggle("show", tasks.length > 0 && completed === tasks.length);
+      saveTasks();
+    }
+
+    document.getElementById("taskForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const subject = document.getElementById("subject").value;
+      const name = document.getElementById("taskName").value.trim();
+      const minutes = Number(document.getElementById("duration").value);
+      if (!subject || !name || !Number.isInteger(minutes) || minutes < 1 || minutes > 600) {
+        alert("Перевір введені дані: обери предмет, введи завдання та час від 1 до 600 хвилин.");
+        return;
+      }
+      tasks.unshift({ id: Date.now(), subject, name, minutes, done: false });
+      event.target.reset();
+      document.getElementById("duration").value = 30;
+      render();
+      document.getElementById("taskName").focus();
+    });
+
+    document.getElementById("taskList").addEventListener("change", event => {
+      if (event.target.matches('[data-action="toggle"]')) {
+        const id = Number(event.target.dataset.id);
+        const task = tasks.find(item => item.id === id);
+        if (task) { task.done = event.target.checked; render(); }
+      }
+    });
+    document.getElementById("taskList").addEventListener("click", event => {
+      const button = event.target.closest('[data-action="delete"]');
+      if (!button) return;
+      const id = Number(button.dataset.id);
+      tasks = tasks.filter(item => item.id !== id);
+      render();
+    });
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      if (confirm("Відновити початковий демонстраційний список? Поточні зміни буде втрачено.")) {
+        tasks = starterTasks.map(task => ({...task}));
+        render();
+      }
+    });
+
+    const today = new Intl.DateTimeFormat("uk-UA", { weekday: "long", day: "numeric", month: "long" }).format(new Date());
+    document.getElementById("todayLabel").textContent = today.charAt(0).toUpperCase() + today.slice(1);
+    render();
+  </script>
+</body>
+</html>
